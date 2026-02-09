@@ -2,7 +2,46 @@
 
 const express = require("express");
 const multer = require("multer");
+// // const pdf = require("pdf-parse").default;
+// const pdfModule = require("pdf-parse");  // import the module
+// const pdf = pdfModule.default || pdfModule;  // get the actual function
+
+/*--------------------check-------------------*/
+
+// const pdfModule = require("pdf-parse");
+
+// This handles the three most common export patterns
+// const pdf = (typeof pdfModule === 'function') 
+//     ? pdfModule 
+//     : (pdfModule.default || pdfModule.pdf || pdfModule);
+
+// if (typeof pdf !== 'function') {
+//     console.error("Debug: pdfModule structure is:", pdfModule);
+//     throw new TypeError("pdf-parse could not find the main function. Check the console log above.");
+// }
+
+// const pdfModule = require("pdf-parse");
+
 const pdf = require("pdf-parse");
+
+
+
+const pdfModule = require("pdf-parse");
+
+// We check .default, then .pdf, then the module itself
+// const pdf = pdfModule.default || pdfModule.pdf || (typeof pdfModule === 'function' ? pdfModule : null);
+
+if (typeof pdf !== 'function') {
+    console.log("Keys available in this module:", Object.keys(pdfModule));
+    throw new Error("STILL NOT A FUNCTION: Try 'npm install pdf-parse@1.1.1' for a more stable version.");
+}
+
+// In this specific version/fork, the function is often nested
+// const pdf = pdfModule.default || pdfModule.parse || pdfModule; 
+
+// Test it
+console.log("Type of pdf:", typeof pdf);
+
 const mammoth = require("mammoth");
 
 const router = express.Router();
@@ -27,9 +66,9 @@ router.post("/resume", upload.single("file"), async (req, res) => {
     console.log("File size:", req.file.size);
 
     // PDF
-    if (req.file.mimetype === "application/pdf") {
-      // const data = await pdf(req.file.buffer);
-      // text = data.text;
+    if ( req.file.mimetype.includes("pdf")) {
+      const data = await pdf(req.file.buffer);
+      text = data.text;
       try {
         const data = await pdf(req.file.buffer);
         text = data.text;
