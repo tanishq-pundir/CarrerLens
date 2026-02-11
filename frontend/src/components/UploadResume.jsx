@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const UploadResume = ({ setResumeText }) => {
+const UploadResume = ({ setResumeText, addToHistory }) => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -9,41 +9,63 @@ const UploadResume = ({ setResumeText }) => {
 
   const handleUpload = async () => {
     if (!file) return alert("Please select a file!");
+
     const formData = new FormData();
     formData.append("file", file);
 
     try {
       setLoading(true);
+
       const res = await axios.post(
         "http://localhost:5000/api/analyze/resume",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
+
       setResumeText(res.data.text);
+
+      // Example result data (replace later with real backend response)
+      const result = {
+        resumeLink: URL.createObjectURL(file),
+        job: "Frontend Developer",
+        score: Math.floor(Math.random() * 20) + 70, // demo score
+      };
+
+      if (addToHistory) addToHistory(result);
+
       alert("Resume uploaded successfully!");
     } catch (err) {
-  console.error("Upload error:", err);
-  alert(err.response?.data?.error || "Failed to upload resume");
-}
- finally {
+      console.error("Upload error:", err);
+      alert(err.response?.data?.error || "Failed to upload resume");
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-white p-6 rounded shadow mb-6">
-      <h2 className="text-xl font-semibold mb-2">Upload Your Resume</h2>
-      <input
-        type="file"
-        accept=".pdf,.doc,.docx"
-        onChange={handleFileChange}
-        className="mb-4"
-      />
+    <div className="bg-white p-8 rounded-2xl shadow">
+      <h2 className="text-2xl font-bold mb-4 text-gray-800">
+        Upload Your Resume
+      </h2>
+
+      <label className="border-2 border-dashed border-indigo-300 rounded-xl p-6 text-center cursor-pointer hover:bg-indigo-50 transition block">
+        <input
+          type="file"
+          accept=".pdf,.doc,.docx"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+        <p className="text-gray-600">
+          {file ? file.name : "Drag & drop your resume here or click to upload"}
+        </p>
+      </label>
+
       <button
         onClick={handleUpload}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        disabled={loading}
+        className="mt-6 w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition disabled:opacity-50"
       >
-        {loading ? "Uploading..." : "Upload"}
+        {loading ? "Uploading..." : "Upload Resume"}
       </button>
     </div>
   );
