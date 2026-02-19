@@ -4,17 +4,24 @@ import axios from "axios";
 const UploadResume = ({ setResumeText, addToHistory }) => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
   const handleFileChange = (e) => setFile(e.target.files[0]);
 
   const handleUpload = async () => {
-    if (!file) return alert("Please select a file!");
+    if (!file) {
+      setError("Please select a file!");
+      setTimeout(() => setError(""), 2500);
+      return;
+    }
 
     const formData = new FormData();
     formData.append("file", file);
 
     try {
       setLoading(true);
+      setError("");
 
       const res = await axios.post(
         "http://localhost:5000/api/analyze/resume",
@@ -24,26 +31,47 @@ const UploadResume = ({ setResumeText, addToHistory }) => {
 
       setResumeText(res.data.text);
 
-      // Example result data (replace later with real backend response)
+      // Demo result (replace later with real backend)
       const result = {
         resumeLink: URL.createObjectURL(file),
         job: "Frontend Developer",
-        score: Math.floor(Math.random() * 20) + 70, // demo score
+        score: Math.floor(Math.random() * 20) + 70,
+        createdAt: new Date().toISOString(),
       };
 
       if (addToHistory) addToHistory(result);
 
-      alert("Resume uploaded successfully!");
+      setSuccess("Resume uploaded successfully!");
+      setTimeout(() => setSuccess(""), 2500);
+
     } catch (err) {
       console.error("Upload error:", err);
-      alert(err.response?.data?.error || "Failed to upload resume");
+      setError(err.response?.data?.error || "Failed to upload resume");
+      setTimeout(() => setError(""), 2500);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-white p-8 rounded-2xl shadow">
+    <div className="bg-white p-8 rounded-2xl shadow relative">
+
+      {/* Success Toast */}
+      {success && (
+        <div className="absolute top-4 right-4 bg-green-100 text-green-800 px-4 py-2 rounded-lg shadow-md flex items-center gap-2 animate-fade-in">
+          <span className="text-lg">✅</span>
+          <span className="text-sm font-medium">{success}</span>
+        </div>
+      )}
+
+      {/* Error Toast */}
+      {error && (
+        <div className="absolute top-4 right-4 bg-red-100 text-red-800 px-4 py-2 rounded-lg shadow-md flex items-center gap-2 animate-fade-in">
+          <span className="text-lg">❌</span>
+          <span className="text-sm font-medium">{error}</span>
+        </div>
+      )}
+
       <h2 className="text-2xl font-bold mb-4 text-gray-800">
         Upload Your Resume
       </h2>
@@ -56,7 +84,9 @@ const UploadResume = ({ setResumeText, addToHistory }) => {
           className="hidden"
         />
         <p className="text-gray-600">
-          {file ? file.name : "Drag & drop your resume here or click to upload"}
+          {file
+            ? file.name
+            : "Drag & drop your resume here or click to upload"}
         </p>
       </label>
 

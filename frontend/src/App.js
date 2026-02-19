@@ -3,6 +3,8 @@ import UploadResume from "./components/UploadResume";
 import JobMatch from "./components/JobMatch";
 import Navbar from "./components/Navbar";
 import Uploads from "./components/Uploads";
+import "./App.css";
+
 
 function App() {
   const [resumeText, setResumeText] = useState("");
